@@ -21,12 +21,17 @@ export async function generateLeaderboard({ repo, token }) {
 
   const top3 = data.slice(0, 3);
 
+  const formatContributor = (login, commits) => {
+    return `- <img src="https://github.com/${login}.png?size=20" width="20" height="20" style="border-radius:50%" /> [@${login}](https://github.com/${login}) — ${commits} commits`;
+  }
+  
+
   const snippet = [
     "### Top Contributors",
     "",
     ...top3.map(
       (c) =>
-        `- [@${c.login}](https://github.com/${c.login}) — ${c.contributions} commits`
+        formatContributor(c.login, c.contributions)
     ),
     "",
   ].join("\n");

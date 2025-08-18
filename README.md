@@ -13,11 +13,14 @@ This is a fun README enhancement to generate a leaderboard for top contributors.
 
 Generated from NextJs repository
 
-- [@ijjk](https://github.com/ijjk) — 3188 commits
-- [@timneutkens](https://github.com/timneutkens) — 2621 commits
-- [@sokra](https://github.com/sokra) — 2138 commits
+### Top Contributors
+
+- <img src="https://github.com/ijjk.png?size=20" width="20" height="20" style="border-radius:50%" /> [@ijjk](https://github.com/ijjk) — 3188 commits
+- <img src="https://github.com/timneutkens.png?size=20" width="20" height="20" style="border-radius:50%" /> [@timneutkens](https://github.com/timneutkens) — 2621 commits
+- <img src="https://github.com/sokra.png?size=20" width="20" height="20" style="border-radius:50%" /> [@sokra](https://github.com/sokra) — 2138 commits
 
 ### Roadmap
 
 - Add support for private repos
 - Make badges cooler
+- Add auto-update support
