@@ -32,17 +32,9 @@ export function formatSVG(contributors) {
     }).join("");
   
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" font-family="sans-serif">
-      <text x="20" y="24" font-size="16" font-weight="700">🏆 Top Contributors</text>
       ${rows}
     </svg>`;
   }
 
-
-
-
-// Default badge generator
-export function defaultBadgeGenerator(contributor) {
-    return [{ label: "Top Contributor", color: "#2ea44f" }];
-  }
   
   

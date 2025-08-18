@@ -16,13 +16,15 @@ program
   .command("generate")
   .description("Generate a leaderboard for a repo")
   .requiredOption("-r, --repo <repo>", "GitHub repo in owner/name format")
+  .option("-l, --limit <number>", "Number of contributors to show", "3")
+  .option("-or, --orientation <name>", "Horizontal or vertical", "horizontal")
   .option("-t, --token <token>", "GitHub token for higher rate limits")
   .option("-f, --format <format>", "output format: markdown or svg", "svg")
   .option("-o, --out <file>", "write output to file instead of stdout")
   .option("--badge-gen <path>", "optional JS file exporting a badge generator function")
   .action(async (opts) => {
     try {
-      const contributors = await fetchContributors(opts.repo, opts.token);
+      const contributors = await fetchContributors(opts.repo, opts.token, opts.limit);
 
       // Load custom badge generator if provided
       let badgeGen = defaultBadgeGenerator;
