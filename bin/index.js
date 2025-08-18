@@ -1,29 +1,56 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import chalk from "chalk";
-import { generateLeaderboard } from "../index.js";
+import { fetchContributors } from "../src/fetch.js";
+import { formatMarkdown, formatSVG} from "../src/formatBadges.js";
+import { defaultBadgeGenerator } from "../src/badges.js";
+import fs from "fs";
 
 const program = new Command();
 
 program
   .name("contrib")
-  .description("CLI to generate contributor leaderboards")
+  .description("Generate GitHub contributor leaderboard")
   .version("0.1.0");
 
 program
   .command("generate")
-  .description("Generate a leaderboard snippet for the current repo")
-  .option("-r, --repo <repo>", "GitHub repo in owner/name format")
-  .option("-t, --token <token>", "GitHub personal access token (optional)")
+  .description("Generate a leaderboard for a repo")
+  .requiredOption("-r, --repo <repo>", "GitHub repo in owner/name format")
+  .option("-t, --token <token>", "GitHub token for higher rate limits")
+  .option("-f, --format <format>", "output format: markdown or svg", "svg")
+  .option("-o, --out <file>", "write output to file instead of stdout")
+  .option("--badge-gen <path>", "optional JS file exporting a badge generator function")
   .action(async (opts) => {
     try {
-      const snippet = await generateLeaderboard(opts);
-      console.log(
-        chalk.green("\n✅ Leaderboard generated! Add this to your README:\n")
-      );
-      console.log(snippet);
+      const contributors = await fetchContributors(opts.repo, opts.token);
+
+      // Load custom badge generator if provided
+      let badgeGen = defaultBadgeGenerator;
+      if (opts.badgeGen) {
+        badgeGen = (await import(opts.badgeGen)).default;
+      }
+
+      // Attach badges
+      contributors.forEach(c => c.badges = badgeGen(c));
+
+      let output;
+      if (opts.format === "svg") {
+        output = formatSVG(contributors);
+      } else {
+        output = formatMarkdown(contributors);
+      }
+
+      const defaultOutFile = opts.format === "svg" ? "leaderboard.svg" : undefined;
+      const outFile = opts.out || defaultOutFile;
+
+      if (outFile) {
+        fs.writeFileSync(outFile, output);
+        console.log(`Output written to ${outFile}`);
+      } else {
+        console.log(output);
+      }
     } catch (err) {
-      console.error(chalk.red("❌ Error:"), err.message);
+      console.error("Error:", err.message);
     }
   });
 

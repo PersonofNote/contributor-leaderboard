@@ -1,0 +1,25 @@
+name: Update Leaderboard SVG
+
+on:
+  push:
+    paths:
+      - 'bin/**'
+      - 'src/**'
+      - 'package.json'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npx contrib generate -r vercel/next.js -f svg -o leaderboard.svg
+      - run: git config user.name "github-actions[bot]"
+      - run: git config user.email "github-actions[bot]@users.noreply.github.com"
+      - run: |
+          git add leaderboard.svg
+          git commit -m "Update leaderboard.svg [skip ci]" || echo "No changes"
+          git push
