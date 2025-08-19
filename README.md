@@ -24,6 +24,9 @@ Generated from the NextJS repo because I don't have a ton of contributors on my 
 - <img src="https://github.com/timneutkens.png?size=20" width="20" height="20" style="border-radius:50%" /> [@timneutkens](https://github.com/timneutkens) — 2621 commits
 - <img src="https://github.com/sokra.png?size=20" width="20" height="20" style="border-radius:50%" /> [@sokra](https://github.com/sokra) — 2138 commits
 
+#### SVG
+
+![Top Contributors](./leaderboard.svg)
 
 ### Roadmap
 
