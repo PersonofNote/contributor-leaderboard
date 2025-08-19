@@ -44,10 +44,10 @@ export async function formatSVG(contributors, options = "vertical") {
     // Handle both string and object parameters for backward compatibility
     const layout = typeof options === 'string' ? options : (options.layout || "vertical");
     const title = typeof options === 'object' ? (options.title || "🏆 Top Contributors") : "🏆 Top Contributors";
-    const padding = 20;
-    const rowHeight = 60;
-    const colWidth = 200;
-    const headerHeight = 40;
+    const padding = 10;
+    const rowHeight = 50;
+    const colWidth = 170;
+    const headerHeight = 45;
     const svgLines = [];
     let contentWidth, contentHeight;
   
@@ -57,7 +57,13 @@ export async function formatSVG(contributors, options = "vertical") {
     );
   
     if (layout === "vertical") {
-      contentWidth = 620;
+      // Calculate actual content width needed
+      const maxBadges = Math.max(...contributors.map(c => defaultBadges(c, 1).length));
+      const badgeStartX = 220;
+      const badgeWidth = 90;
+      const badgeSpacing = 95;
+      const actualContentWidth = badgeStartX + (maxBadges * badgeSpacing) - (badgeSpacing - badgeWidth);
+      contentWidth = actualContentWidth;
       contentHeight = headerHeight + rowHeight * contributors.length;
       
       contributors.forEach((c, i) => {
@@ -67,10 +73,10 @@ export async function formatSVG(contributors, options = "vertical") {
   
         let badgeSVG = "";
         badges.forEach((b, j) => {
-          const bx = 340 + j * 110;
+          const bx = badgeStartX + j * badgeSpacing;
           badgeSVG += `
-            <rect x="${bx}" y="${y - 8}" rx="6" ry="6" width="100" height="22" fill="${b.color}" />
-            <text x="${bx + 50}" y="${y + 3}" font-size="12" fill="white" text-anchor="middle" dominant-baseline="middle">${b.label}</text>
+            <rect x="${bx}" y="${y - 8}" rx="6" ry="6" width="${badgeWidth}" height="22" fill="${b.color}" />
+            <text x="${bx + badgeWidth/2}" y="${y + 3}" font-size="12" fill="white" text-anchor="middle" dominant-baseline="middle">${b.label}</text>
           `;
         });
   
@@ -88,13 +94,15 @@ export async function formatSVG(contributors, options = "vertical") {
     } else { // horizontal layout
       const contributorsPerRow = Math.min(contributors.length, 3);
       const rows = Math.ceil(contributors.length / contributorsPerRow);
-      contentWidth = contributorsPerRow * colWidth + padding;
+      // Calculate actual width needed: avatar + text + badges
+      const actualColWidth = 160; // Reduced from 170
+      contentWidth = contributorsPerRow * actualColWidth;
       contentHeight = headerHeight + rows * (rowHeight + 60);
       
       contributors.forEach((c, i) => {
         const col = i % contributorsPerRow;
         const row = Math.floor(i / contributorsPerRow);
-        const x = padding + col * colWidth;
+        const x = padding + col * actualColWidth;
         const y = headerHeight + padding + row * (rowHeight + 60);
         const avatar = avatars[i];
         const badges = defaultBadges(c, i + 1);
@@ -122,7 +130,7 @@ export async function formatSVG(contributors, options = "vertical") {
     }
 
     const totalWidth = contentWidth + padding * 2;
-    const totalHeight = contentHeight + padding * 2;
+    const totalHeight = contentHeight + padding;
   
     return `
   <svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}">
