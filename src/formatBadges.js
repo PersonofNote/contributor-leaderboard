@@ -40,12 +40,16 @@ export function formatSVG(contributors) {
   }
 */
 
-export async function formatSVG(contributors, layout = "vertical") {
-    const rowHeight = 50;
-    const colWidth = 180;
-    const width = 600;
+export async function formatSVG(contributors, options = "vertical") {
+    // Handle both string and object parameters for backward compatibility
+    const layout = typeof options === 'string' ? options : (options.layout || "vertical");
+    const title = typeof options === 'object' ? (options.title || "🏆 Top Contributors") : "🏆 Top Contributors";
+    const padding = 20;
+    const rowHeight = 60;
+    const colWidth = 200;
+    const headerHeight = 40;
     const svgLines = [];
-    let height;
+    let contentWidth, contentHeight;
   
     // Pre-fetch all avatars as Base64
     const avatars = await Promise.all(
@@ -53,63 +57,84 @@ export async function formatSVG(contributors, layout = "vertical") {
     );
   
     if (layout === "vertical") {
-      height = rowHeight * contributors.length + 40;
+      contentWidth = 620;
+      contentHeight = headerHeight + rowHeight * contributors.length;
+      
       contributors.forEach((c, i) => {
-        const y = 40 + i * rowHeight;
+        const y = headerHeight + padding + i * rowHeight;
         const avatar = avatars[i];
         const badges = defaultBadges(c, i + 1);
   
         let badgeSVG = "";
         badges.forEach((b, j) => {
-          const bx = 320 + j * 110;
+          const bx = 340 + j * 110;
           badgeSVG += `
-            <rect x="${bx}" y="${y - 15}" rx="6" ry="6" width="100" height="22" fill="${b.color}" />
-            <text x="${bx + 50}" y="${y}" font-size="12" fill="white" text-anchor="middle" dominant-baseline="middle">${b.label}</text>
+            <rect x="${bx}" y="${y - 8}" rx="6" ry="6" width="100" height="22" fill="${b.color}" />
+            <text x="${bx + 50}" y="${y + 3}" font-size="12" fill="white" text-anchor="middle" dominant-baseline="middle">${b.label}</text>
           `;
         });
   
         svgLines.push(`
           <g>
             <a href="https://github.com/${c.login}">
-              <image href="${avatar}" x="10" y="${y - 20}" width="40" height="40" clip-path="circle(20)" />
-              <text x="60" y="${y}" font-size="14" font-family="sans-serif" fill="black">@${c.login} — ${c.commits} commits</text>
+              <image href="${avatar}" x="${padding}" y="${y - 20}" width="40" height="40" clip-path="circle(20)" />
+              <text x="${padding + 55}" y="${y}" font-size="14" font-family="sans-serif" fill="#333">@${c.login}</text>
+              <text x="${padding + 55}" y="${y + 16}" font-size="12" font-family="sans-serif" fill="#666">${c.commits} commits</text>
               ${badgeSVG}
             </a>
           </g>
         `);
       });
     } else { // horizontal layout
-      height = rowHeight + 40;
+      const contributorsPerRow = Math.min(contributors.length, 3);
+      const rows = Math.ceil(contributors.length / contributorsPerRow);
+      contentWidth = contributorsPerRow * colWidth + padding;
+      contentHeight = headerHeight + rows * (rowHeight + 60);
+      
       contributors.forEach((c, i) => {
-        const x = 20 + i * colWidth;
-        const y = 40;
+        const col = i % contributorsPerRow;
+        const row = Math.floor(i / contributorsPerRow);
+        const x = padding + col * colWidth;
+        const y = headerHeight + padding + row * (rowHeight + 60);
         const avatar = avatars[i];
         const badges = defaultBadges(c, i + 1);
   
         let badgeSVG = "";
         badges.forEach((b, j) => {
-          const by = y + 30 + j * 25;
+          const by = y + 45 + j * 25;
           badgeSVG += `
-            <rect x="${x}" y="${by}" rx="6" ry="6" width="100" height="22" fill="${b.color}" />
-            <text x="${x + 50}" y="${by + 11}" font-size="12" fill="white" text-anchor="middle" dominant-baseline="middle">${b.label}</text>
+            <rect x="${x}" y="${by}" rx="6" ry="6" width="90" height="20" fill="${b.color}" />
+            <text x="${x + 45}" y="${by + 10}" font-size="11" fill="white" text-anchor="middle" dominant-baseline="middle">${b.label}</text>
           `;
         });
   
         svgLines.push(`
           <g>
             <a href="https://github.com/${c.login}">
-              <image href="${avatar}" x="${x}" y="${y - 20}" width="40" height="40" clip-path="circle(20)" />
-              <text x="${x}" y="${y + 30}" font-size="14" font-family="sans-serif" fill="black">@${c.login} — ${c.commits} commits</text>
+              <image href="${avatar}" x="${x}" y="${y}" width="40" height="40" clip-path="circle(20)" />
+              <text x="${x + 50}" y="${y + 15}" font-size="14" font-family="sans-serif" fill="#333">@${c.login}</text>
+              <text x="${x + 50}" y="${y + 30}" font-size="12" font-family="sans-serif" fill="#666">${c.commits} commits</text>
               ${badgeSVG}
             </a>
           </g>
         `);
       });
     }
+
+    const totalWidth = contentWidth + padding * 2;
+    const totalHeight = contentHeight + padding * 2;
   
     return `
-  <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-    <text x="20" y="24" font-size="16" font-weight="700">🏆 Top Contributors</text>
+  <svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}">
+    <defs>
+      <clipPath id="avatar-clip">
+        <circle cx="20" cy="20" r="20"/>
+      </clipPath>
+    </defs>
+    
+    <rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" rx="12" ry="12" fill="white" stroke="#e1e5e9" stroke-width="1"/>
+    
+    <text x="${padding}" y="${padding + 24}" font-size="18" font-weight="700" font-family="sans-serif" fill="#24292f">${title}</text>
     ${svgLines.join("")}
   </svg>
   `;

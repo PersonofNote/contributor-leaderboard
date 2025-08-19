@@ -21,6 +21,7 @@ program
   .option("-t, --token <token>", "GitHub token for higher rate limits")
   .option("-f, --format <format>", "output format: markdown or svg", "svg")
   .option("-p, --path <file>", "write output to file instead of stdout")
+  .option("--title <text>", "Custom title for the leaderboard", "🏆 Top Contributors")
   .option("--badge-gen <path>", "optional JS file exporting a badge generator function")
   .action(async (opts) => {
     try {
@@ -39,6 +40,7 @@ program
       if (opts.format === "svg") {
         output = await formatSVG(contributors, {
           layout: opts.orientation,
+          title: opts.title,
           badges: badgeGen
         });
       } else {
