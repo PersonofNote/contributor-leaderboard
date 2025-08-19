@@ -26,7 +26,9 @@ Generated from the NextJS repo because I don't have a ton of contributors on my 
 
 #### SVG
 
-![Top Contributors](./leaderboard.svg)
+![Vertical Layout](./leaderboard.svg)
+
+![Horizontal Layout](./horizontal-layout.svg)
 
 ### Roadmap
 

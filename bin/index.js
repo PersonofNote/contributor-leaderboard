@@ -48,7 +48,7 @@ program
       }
 
       const defaultOutFile = opts.format === "svg" ? "leaderboard.svg" : undefined;
-      const outFile = opts.out || defaultOutFile;
+      const outFile = opts.path || defaultOutFile;
 
       if (outFile) {
         fs.writeFileSync(outFile, output);
