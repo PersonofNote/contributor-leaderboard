@@ -4,6 +4,33 @@ import { fetchContributors } from "../src/fetch.js";
 import { formatMarkdown, formatSVG} from "../src/formatBadges.js";
 import { defaultBadges } from "../src/badges.js";
 import fs from "fs";
+import path from "path";
+
+function validateBadgeGenPath(filePath) {
+  if (!filePath || typeof filePath !== 'string') {
+    throw new Error('Badge generator path must be a non-empty string');
+  }
+  
+  // Resolve to absolute path to prevent directory traversal
+  const resolvedPath = path.resolve(filePath);
+  
+  // Ensure the file exists and is a .js file
+  if (!fs.existsSync(resolvedPath)) {
+    throw new Error(`Badge generator file not found: ${resolvedPath}`);
+  }
+  
+  if (!resolvedPath.endsWith('.js')) {
+    throw new Error('Badge generator must be a .js file');
+  }
+  
+  // Ensure it's not trying to access system files
+  const cwd = process.cwd();
+  if (!resolvedPath.startsWith(cwd)) {
+    throw new Error('Badge generator must be within the current working directory');
+  }
+  
+  return resolvedPath;
+}
 
 const program = new Command();
 
@@ -30,7 +57,20 @@ program
       // Load custom badge generator if provided
       let badgeGen = defaultBadges;
       if (opts.badgeGen) {
-        badgeGen = (await import(opts.badgeGen)).default;
+        try {
+          const validatedPath = validateBadgeGenPath(opts.badgeGen);
+          const module = await import(validatedPath);
+          
+          if (typeof module.default !== 'function') {
+            throw new Error('Badge generator must export a function as default export');
+          }
+          
+          badgeGen = module.default;
+        } catch (error) {
+          console.error('Error loading badge generator:', error.message);
+          console.error('Using default badge generator instead.');
+          // Continue with default badges rather than failing
+        }
       }
 
       // Attach badges
