@@ -12,3 +12,11 @@ export async function fetchContributors(repo, token, limit = 3) {
     commits: u.contributions
   }));
 }
+
+
+export async function fetchAvatarBase64(username, size = 40) {
+  const url = `https://github.com/${username}.png?size=${size}`;
+  const res = await fetch(url);
+  const buffer = await res.arrayBuffer();
+  return `data:image/png;base64,${Buffer.from(buffer).toString("base64")}`;
+}

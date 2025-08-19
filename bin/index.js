@@ -2,7 +2,7 @@
 import { Command } from "commander";
 import { fetchContributors } from "../src/fetch.js";
 import { formatMarkdown, formatSVG} from "../src/formatBadges.js";
-import { defaultBadgeGenerator } from "../src/badges.js";
+import { defaultBadges } from "../src/badges.js";
 import fs from "fs";
 
 const program = new Command();
@@ -17,17 +17,17 @@ program
   .description("Generate a leaderboard for a repo")
   .requiredOption("-r, --repo <repo>", "GitHub repo in owner/name format")
   .option("-l, --limit <number>", "Number of contributors to show", "3")
-  .option("-or, --orientation <name>", "Horizontal or vertical", "horizontal")
+  .option("-o, --orientation <name>", "Horizontal or vertical", "horizontal")
   .option("-t, --token <token>", "GitHub token for higher rate limits")
   .option("-f, --format <format>", "output format: markdown or svg", "svg")
-  .option("-o, --out <file>", "write output to file instead of stdout")
+  .option("-p, --path <file>", "write output to file instead of stdout")
   .option("--badge-gen <path>", "optional JS file exporting a badge generator function")
   .action(async (opts) => {
     try {
       const contributors = await fetchContributors(opts.repo, opts.token, opts.limit);
 
       // Load custom badge generator if provided
-      let badgeGen = defaultBadgeGenerator;
+      let badgeGen = defaultBadges;
       if (opts.badgeGen) {
         badgeGen = (await import(opts.badgeGen)).default;
       }
@@ -37,7 +37,10 @@ program
 
       let output;
       if (opts.format === "svg") {
-        output = formatSVG(contributors);
+        output = await formatSVG(contributors, {
+          layout: opts.orientation,
+          badges: badgeGen
+        });
       } else {
         output = formatMarkdown(contributors);
       }
